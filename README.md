@@ -86,14 +86,17 @@ Tables are created automatically on first boot (`spring.jpa.hibernate.ddl-auto=u
    - **Root Directory**: `Frontend/expensetracker`
    - Framework preset **Vite** (build command and output directory come from `vercel.json`)
 3. Add environment variable `VITE_API_URL` = the Render URL from step 2 (no trailing slash).
-4. Deploy, then note the Vercel URL, e.g. `https://expensetracker.vercel.app`.
+4. Deploy.
+
+Already deployed at **https://expensetracker-jet-pi.vercel.app**
+(project `abhishek-gajavillis-projects/expensetracker`).
 
 ### 4. Close the CORS loop
 
 Back in Render, set `CORS_ALLOWED_ORIGINS` to the Vercel URL and redeploy:
 
 ```
-https://expensetracker.vercel.app
+https://expensetracker-jet-pi.vercel.app
 ```
 
 Multiple origins are comma separated, and `http://localhost:5173` can stay in the list for local work.
