@@ -1,0 +1,32 @@
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# Env files (never commit real credentials)
+.env
+.env.*
+!.env.example
+
+# Java / Maven
+target/
+*.class
+*.jar
+# Negations must follow the pattern they override
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
