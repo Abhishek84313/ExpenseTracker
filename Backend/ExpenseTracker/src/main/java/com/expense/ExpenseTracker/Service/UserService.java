@@ -1,7 +1,9 @@
 package com.expense.ExpenseTracker.Service;
 
 import com.expense.ExpenseTracker.Entity.User;
+import com.expense.ExpenseTracker.Exception.DuplicateUsernameException;
 import com.expense.ExpenseTracker.Repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +21,18 @@ public class UserService {
     }
 
     public User signup(User user) {
+        if (repo.findByUsername(user.getUsername()) != null)
+            throw new DuplicateUsernameException(user.getUsername());
+
         user.setPassword(encoder.encode(user.getPassword()));
-        return repo.save(user);
+
+        try {
+            return repo.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            // Two concurrent signups can both pass the check above; the unique
+            // index on username is what actually decides the winner.
+            throw new DuplicateUsernameException(user.getUsername());
+        }
     }
 
     public String login(String username, String password) {
