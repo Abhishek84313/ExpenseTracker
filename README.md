@@ -57,7 +57,14 @@ Deploy in this order: **database -> backend -> frontend**, since each step needs
    jdbc:mysql://<host>:<port>/defaultdb?sslMode=REQUIRED
    ```
 
-Tables are created automatically on first boot (`spring.jpa.hibernate.ddl-auto=update`).
+> Aiven shows a **Service URI** starting with `mysql://user:password@host...`. That is *not* a JDBC
+> URL — pasting it into `DB_URL` makes the driver reject it and the app exits at startup. Build the
+> `jdbc:mysql://...` form above by hand, and use `sslMode` (camelCase), not Aiven's `ssl-mode`.
+> Use the MySQL port (`19593`), not the MySQL**x** port (`19597`) — the JDBC driver does not speak
+> the X Protocol.
+
+Tables are created automatically on first boot (`spring.jpa.hibernate.ddl-auto=update`); the
+`users` and `expenses` tables are confirmed present on the live service.
 
 ### 2. Spring Boot on Render
 
@@ -73,11 +80,27 @@ Tables are created automatically on first boot (`spring.jpa.hibernate.ddl-auto=u
    | `DB_URL`               | the JDBC URL from step 1                           |
    | `DB_USERNAME`          | Aiven user (e.g. `avnadmin`)                       |
    | `DB_PASSWORD`          | Aiven password                                     |
+   | `PORT`                 | `8080` — must match the Dockerfile's `EXPOSE`      |
    | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` for now, updated in step 3 |
 
 4. Deploy, then note the service URL, e.g. `https://expensetracker-api.onrender.com`.
 
 > Render's free tier sleeps after ~15 minutes of inactivity; the first request afterwards takes 30-60s to wake it.
+
+`render.yaml` at the repo root codifies these settings. Note that it only applies to services created
+from a Render **Blueprint** — a service created by hand in the dashboard keeps its own settings, so
+changes there must be made in the dashboard too.
+
+#### Troubleshooting: "Port scan timeout reached, no open ports detected"
+
+Render never saw a listening socket. Two independent causes, both worth ruling out:
+
+1. **The app exited before binding.** Almost always a bad `DB_URL` (see the Service URI warning
+   above) — Hibernate cannot determine a dialect without a live connection, so startup aborts.
+   Check the Render logs for `Communications link failure` or `Driver claims to not accept jdbcUrl`.
+2. **Port mismatch.** The `Dockerfile` declares `EXPOSE 8080`, and Render prefers the exposed port
+   when detecting. Render's own default `PORT` is `10000`, so without an explicit override the app
+   binds 10000 while Render scans 8080 and finds nothing. Setting `PORT=8080` makes both agree.
 
 ### 3. React on Vercel
 

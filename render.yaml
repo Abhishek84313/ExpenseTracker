@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: expensetracker-api
+    runtime: docker
+    plan: free
+    rootDir: Backend/ExpenseTracker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      # Pinned so the port the app binds to matches the Dockerfile's EXPOSE.
+      # Render's default (10000) would not match, and port detection fails.
+      - key: PORT
+        value: 8080
+      # Secrets are set in the dashboard, never committed.
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://expensetracker-jet-pi.vercel.app
